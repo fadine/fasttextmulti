@@ -13,7 +13,7 @@ import (
 
 // LoadModel - load FastText model
 func LoadModel(path string) {
-	C.load_model(C.CString("fasttext_search_category.clf.CLF.bin"))
+	C.load_model(C.CString(path))
 }
 
 // Predict - predict
@@ -21,9 +21,9 @@ func Predict(sentence string) (prob float32, labels []string, err error) {
 
 	var cprob C.float
 	var buf *C.char
-	buf = (*C.char)(C.calloc(128, 1))
+	buf = (*C.char)(C.calloc(256, 1))
 
-	ret := C.predict(C.CString(sentence), &cprob, buf, 128)
+	ret := C.predict(C.CString(sentence), &cprob, buf, 256)
 
 	if ret != 0 {
 		err = errors.New("error in prediction")
