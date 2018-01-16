@@ -1,6 +1,6 @@
 package fasttextmulti
 
-// #cgo LDFLAGS: -L${SRCDIR} -lfasttext -lstdc++
+// #cgo LDFLAGS: -L${SRCDIR} -lfasttext -lstdc++ -lm
 // #include <stdlib.h>
 // void load_model(char *path);
 // int predict(char *query, float *prob, char *buf, int buf_sz);
@@ -8,6 +8,7 @@ import "C"
 import (
 	"errors"
 	"unsafe"
+        "strings"
 )
 
 // LoadModel - load FastText model
@@ -16,21 +17,24 @@ func LoadModel(path string) {
 }
 
 // Predict - predict
-func Predict(sentence string) (prob float32, label string, err error) {
+func Predict(sentence string) (prob float32, labels []string, err error) {
 
 	var cprob C.float
 	var buf *C.char
-	buf = (*C.char)(C.calloc(64, 1))
+	buf = (*C.char)(C.calloc(128, 1))
 
-	ret := C.predict(C.CString(sentence), &cprob, buf, 64)
+	ret := C.predict(C.CString(sentence), &cprob, buf, 128)
 
 	if ret != 0 {
 		err = errors.New("error in prediction")
 	} else {
-		label = C.GoString(buf)
+		label := C.GoString(buf)
+                label = strings.Replace(label, "__label__", "", -1)
+                labels = strings.Split(label, "=")
+                labels = append(labels[:0], labels[1:]...)
 		prob = float32(cprob)
 	}
 	C.free(unsafe.Pointer(buf))
 
-	return prob, label, err
+	return prob, labels, err
 }
