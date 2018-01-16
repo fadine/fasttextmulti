@@ -22,7 +22,7 @@ func Predict(sentence string) (prob float32, label string, err error) {
 	var buf *C.char
 	buf = (*C.char)(C.calloc(64, 1))
 
-	ret := C.predict(C.CString(sentence), &cprob, buf, 64)
+	ret := C.predict(C.CString(sentence), &cprob, buf, 256)
 
 	if ret != 0 {
 		err = errors.New("error in prediction")
